@@ -147,3 +147,4 @@ All rules are verified against real-world clean vs. malicious controller fixture
 ## 📄 License
 
 MIT License. Free and open source for DevOps, platform, and security engineering teams.
+

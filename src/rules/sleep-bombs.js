@@ -99,3 +99,4 @@ function extractNumericValue(node) {
   }
   return null;
 }
+

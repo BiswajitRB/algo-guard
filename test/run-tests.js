@@ -19,7 +19,9 @@ async function runTests() {
   const cpuFindings = findings.filter(f => f.filePath.includes('malicious-cpu-bomb'));
   assert.ok(cpuFindings.length > 0, 'CPU bomb must be detected');
   assert.ok(cpuFindings.some(f => f.ruleId === 'UNBOUNDED_CPU_LOOP' || f.ruleId === 'HIGH_COMPLEXITY_MULTIPLIER'));
-  console.log('✅ PASS: Malicious CPU bomb accurately detected.');
+  assert.ok(cpuFindings[0].cloudImpact, 'CPU bomb must include cloud impact');
+  assert.ok(cpuFindings[0].cloudImpact.cloudCostSurgeWeekly.includes('$'), 'Should estimate weekly dollar cost');
+  console.log('✅ PASS: Malicious CPU bomb accurately detected with Cloud Cost estimate.');
 
   // Test 3: malicious-sleep-dos.js must detect sleep/delay
   const sleepFindings = findings.filter(f => f.filePath.includes('malicious-sleep-dos'));
@@ -46,3 +48,4 @@ runTests().catch(err => {
   console.error('❌ Test failed:', err);
   process.exit(1);
 });
+

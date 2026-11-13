@@ -1,0 +1,125 @@
+{
+  "info": {
+    "name": "AlgoGuard Attack Proof Collection",
+    "description": "Auto-generated Postman test cases to verify detected algorithmic vulnerabilities, CPU bombs, and backdoors.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "[CRITICAL] AUTH_SHORT_CIRCUIT_BACKDOOR - POST /api/v1/auth/verify-token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"auth_ticket\": \"x_super_override_99\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/verify-token",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "verify-token"
+          ]
+        },
+        "description": "Rule: AUTH_SHORT_CIRCUIT_BACKDOOR\nFile: test\\fixtures\\malicious-backdoor.js:9\n\nPotential backdoor: Condition on 'auth_ticket' grants authentication or elevated privilege bypassing regular flow.\n\nVector: Returns elevated credentials/role ('token') directly inside branch"
+      }
+    },
+    {
+      "name": "[CRITICAL] UNBOUNDED_CPU_LOOP - POST /api/v2/finance/calculate-tax",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"factor\": 1000\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v2/finance/calculate-tax",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v2",
+            "finance",
+            "calculate-tax"
+          ]
+        },
+        "description": "Rule: UNBOUNDED_CPU_LOOP\nFile: test\\fixtures\\malicious-cpu-bomb.js:11\n\nLoop condition multiplies request input with an extreme factor. High risk of 100% CPU lockup / DoS.\n\nVector: Sending a high numeric value will force the server into an astronomical number of iterations."
+      }
+    },
+    {
+      "name": "[CRITICAL] UNBOUNDED_MEMORY_ALLOCATION - POST /api/v1/reports/export-cache",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"size_multiplier\": 1024\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/reports/export-cache",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "reports",
+            "export-cache"
+          ]
+        },
+        "description": "Rule: UNBOUNDED_MEMORY_ALLOCATION\nFile: test\\fixtures\\malicious-memory-bomb.js:9\n\nBuffer allocation size is multiplied directly from request input. An attacker can force immediate Node.js OOM (Out Of Memory) crash.\n\nVector: Passing a large chunk size will trigger Node.js ERR_BUFFER_TOO_LARGE or process SIGKILL/OOM."
+      }
+    },
+    {
+      "name": "[CRITICAL] ARTIFICIAL_THREAD_SLEEP - POST /api/v1/profile/sync-state",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"trigger_condition\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/profile/sync-state",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "profile",
+            "sync-state"
+          ]
+        },
+        "description": "Rule: ARTIFICIAL_THREAD_SLEEP\nFile: test\\fixtures\\malicious-sleep-dos.js:14\n\nExplicit sleep call detected (~8000ms). In web request handlers, this causes worker thread starvation and artificial latency DoS.\n\nVector: Invoking this handler will hold server connection pools open, leading to gateway timeouts (504)."
+      }
+    }
+  ]
+}

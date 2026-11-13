@@ -45,3 +45,4 @@ export async function run() {
 if (process.env.GITHUB_ACTIONS) {
   run();
 }
+

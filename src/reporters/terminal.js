@@ -42,6 +42,14 @@ export function printTerminalReport(findings) {
       console.log(pc.gray(`        -H "Content-Type: application/json" \\`));
       console.log(pc.gray(`        -d '{"${finding.attackVector.parameter}": ${JSON.stringify(finding.attackVector.exploitValue)}}'`));
     }
+
+    if (finding.cloudImpact) {
+      console.log(`   ${pc.yellow(pc.bold('💸 Cloud Auto-Scaling & Financial DoS Impact:'))}`);
+      console.log(`      ${pc.dim('•')} ${pc.bold('Autoscaler Action:')} ${finding.cloudImpact.autoscalingBehavior}`);
+      console.log(`      ${pc.dim('•')} ${pc.bold('Estimated Surge:')}   ${pc.red(pc.bold(finding.cloudImpact.cloudCostSurgeWeekly))} / week (${finding.cloudImpact.cloudCostSurgeMonthly} / mo)`);
+      console.log(`      ${pc.dim('•')} ${pc.bold('Failure Mode:')}       ${finding.cloudImpact.failureMode}`);
+    }
     console.log(pc.dim('─'.repeat(60)));
   });
 }
+

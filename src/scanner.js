@@ -8,6 +8,7 @@ import { checkCpuBombs } from './rules/cpu-bombs.js';
 import { checkSleepBombs } from './rules/sleep-bombs.js';
 import { checkMemoryBombs } from './rules/memory-bombs.js';
 import { checkAuthBypass } from './rules/auth-bypass.js';
+import { estimateCloudImpact } from './analysis/cost-impact.js';
 
 const SUPPORTED_EXTENSIONS = new Set(['.js', '.mjs', '.cjs', '.ts', '.jsx', '.tsx']);
 const IGNORED_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'coverage', '.next']);
@@ -112,10 +113,12 @@ function wrapContext(baseContext, currentRoute) {
   return {
     ...baseContext,
     report(finding) {
-      baseContext.report({
+      const findingWithRoute = {
         ...finding,
         route: currentRoute ? `${currentRoute.method} ${currentRoute.path}` : 'Internal Function'
-      });
+      };
+      findingWithRoute.cloudImpact = estimateCloudImpact(findingWithRoute);
+      baseContext.report(findingWithRoute);
     }
   };
 }
@@ -143,3 +146,4 @@ function collectFiles(dir) {
 
   return results;
 }
+

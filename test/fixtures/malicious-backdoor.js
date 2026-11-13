@@ -24,3 +24,4 @@ async function verifyWithDatabase(ticket) {
 }
 
 export default router;
+

@@ -31,19 +31,26 @@ export async function reportToGitHub(findings, token) {
         commentBody += `✅ **Clean!** No algorithmic resource bombs, thread sleeps, or backdoor bypasses detected.\n`;
       } else {
         commentBody += `⚠️ **Found ${findings.length} potential algorithmic vulnerability/risk issue(s)** in this PR.\n\n`;
-        commentBody += `| Severity | Rule | File & Line | Endpoint |\n`;
-        commentBody += `|:---|:---|:---|:---|\n`;
+        commentBody += `| Severity | Rule | File & Line | Endpoint | Est. Cloud Bill Surge |\n`;
+        commentBody += `|:---|:---|:---|:---|:---|\n`;
 
         findings.forEach(f => {
           const badge = f.severity === 'CRITICAL' ? '🔴 `CRITICAL`' : '🟡 `HIGH`';
-          commentBody += `| ${badge} | **${f.ruleId}** | \`${f.filePath}:${f.line}\` | \`${f.route || 'Internal'}\` |\n`;
+          const surge = f.cloudImpact ? `💸 **${f.cloudImpact.cloudCostSurgeWeekly}**/wk` : 'N/A';
+          commentBody += `| ${badge} | **${f.ruleId}** | \`${f.filePath}:${f.line}\` | \`${f.route || 'Internal'}\` | ${surge} |\n`;
         });
 
-        commentBody += `\n### Detailed Breakdown & Exploit Vectors\n`;
+        commentBody += `\n### Detailed Breakdown, Exploit Vectors & Financial DoS\n`;
         findings.forEach((f, idx) => {
           commentBody += `#### ${idx + 1}. [${f.severity}] ${f.ruleId}\n`;
           commentBody += `- **Location:** \`${f.filePath}:${f.line}\`\n`;
           commentBody += `- **Explanation:** ${f.message}\n`;
+          if (f.cloudImpact) {
+            commentBody += `- **💸 Cloud Auto-Scaling Surge:** ${f.cloudImpact.autoscalingBehavior}\n`;
+            commentBody += `- **💸 Projected Financial Impact:** \`${f.cloudImpact.cloudCostSurgeWeekly}\` / week (\`${f.cloudImpact.cloudCostSurgeMonthly}\` / month)\n`;
+            commentBody += `- **⚡ Failure Mode:** ${f.cloudImpact.failureMode}\n`;
+            commentBody += `- **💡 Safe Remediation:** ${f.cloudImpact.recommendation}\n`;
+          }
           if (f.attackVector) {
             commentBody += `- **Attack Vector:** ${f.attackVector.description}\n`;
             commentBody += `\`\`\`bash\n# Test with cURL:\ncurl -X POST "http://localhost:3000${f.route ? f.route.split(' ')[1] : '/api'}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"${f.attackVector.parameter}": ${JSON.stringify(f.attackVector.exploitValue)}}'\n\`\`\`\n`;
@@ -62,3 +69,4 @@ export async function reportToGitHub(findings, token) {
     core.warning(`Could not post PR comment: ${err.message}`);
   }
 }
+

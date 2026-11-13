@@ -18,3 +18,4 @@ router.post('/api/v1/profile/sync-state', async (req, res) => {
 });
 
 export default router;
+

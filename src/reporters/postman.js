@@ -46,3 +46,4 @@ export function exportPostmanCollection(findings, outputPath = 'algoguard-postma
   fs.writeFileSync(outputPath, JSON.stringify(collection, null, 2), 'utf-8');
   return outputPath;
 }
+

@@ -122,3 +122,4 @@ function hasHighMultiplier(node) {
   }
   return false;
 }
+
