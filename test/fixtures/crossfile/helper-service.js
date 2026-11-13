@@ -7,3 +7,4 @@ export function processComplexCalculations(factor) {
   }
   return val;
 }
+

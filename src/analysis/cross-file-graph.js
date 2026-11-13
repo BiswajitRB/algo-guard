@@ -197,3 +197,4 @@ function hasMultiplier(node) {
   walk(node);
   return mult;
 }
+

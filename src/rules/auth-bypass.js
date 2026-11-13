@@ -1,24 +1,22 @@
 /**
  * Rule: AUTH_OR_LOGIC_SHORT_CIRCUIT
  * Detects hidden backdoors and auth bypass logic:
- * 1. Checks if a request parameter (query/body/header, including destructured vars)
- *    directly grants admin/tokens/privileges or returns early bypassing database authentication.
- * 2. Compares inputs against hardcoded backdoor magic tokens/keys.
+ * 1. IfStatement checks comparing raw request parameters to magic keys granting admin/tokens.
+ * 2. ConditionalExpression (Ternary ? :) granting elevated privileges based on raw request values.
  */
 
 export function checkAuthBypass(path, filePath, context) {
   const node = path.node;
 
+  // Pattern 1: IfStatement (if (param === 'magic_key') { ... })
   if (path.isIfStatement()) {
     const test = node.test;
     const consequent = node.consequent;
 
-    // First inspect what happens inside the 'if' block (consequent)
     let grantsPrivilege = false;
     let bypassDetails = null;
 
     path.get('consequent').traverse({
-      // Look for response sending back tokens or admin roles
       CallExpression(innerPath) {
         const callee = innerPath.node.callee;
         if (
@@ -30,13 +28,7 @@ export function checkAuthBypass(path, filePath, context) {
             for (const prop of arg.properties) {
               if (prop.key && (prop.key.name || prop.key.value)) {
                 const keyName = String(prop.key.name || prop.key.value).toLowerCase();
-                if (
-                  keyName.includes('role') ||
-                  keyName.includes('admin') ||
-                  keyName.includes('token') ||
-                  keyName.includes('authenticated') ||
-                  keyName.includes('auth')
-                ) {
+                if (isElevatedKeyword(keyName)) {
                   grantsPrivilege = true;
                   bypassDetails = `Returns elevated credentials/role ('${keyName}') directly inside branch`;
                 }
@@ -46,7 +38,6 @@ export function checkAuthBypass(path, filePath, context) {
         }
       },
 
-      // Look for assignment like req.user = { role: 'admin' }
       AssignmentExpression(innerPath) {
         const left = innerPath.node.left;
         if (
@@ -62,7 +53,6 @@ export function checkAuthBypass(path, filePath, context) {
 
     if (!grantsPrivilege) return;
 
-    // Check if the condition evaluates a request property or string literal comparison
     const reqProperty = getTestedRequestProperty(test, path.scope);
     if (reqProperty) {
       context.report({
@@ -81,12 +71,66 @@ export function checkAuthBypass(path, filePath, context) {
       });
     }
   }
+
+  // Pattern 2: ConditionalExpression (Ternary: param === 'secret' ? 'admin' : 'user')
+  if (path.isConditionalExpression()) {
+    const test = node.test;
+    const consequent = node.consequent;
+    const alternate = node.alternate;
+
+    const reqProperty = getTestedRequestProperty(test, path.scope);
+    if (!reqProperty) return;
+
+    const hasElevatedBranch = isElevatedNode(consequent) || isElevatedNode(alternate);
+    if (hasElevatedBranch) {
+      context.report({
+        ruleId: 'AUTH_SHORT_CIRCUIT_BACKDOOR',
+        severity: 'CRITICAL',
+        filePath,
+        line: node.loc ? node.loc.start.line : 1,
+        column: node.loc ? node.loc.start.column : 1,
+        snippet: context.getCodeSlice(node),
+        message: `Ternary backdoor detected: Parameter '${reqProperty.name}' directly assigns elevated role or privileges via conditional expression.`,
+        attackVector: {
+          parameter: reqProperty.name,
+          exploitValue: reqProperty.magicValue || 'secret_override',
+          description: 'Ternary expression short-circuits privilege assignment.'
+        }
+      });
+    }
+  }
+}
+
+function isElevatedKeyword(str) {
+  return (
+    str.includes('role') ||
+    str.includes('admin') ||
+    str.includes('token') ||
+    str.includes('authenticated') ||
+    str.includes('auth') ||
+    str.includes('root')
+  );
+}
+
+function isElevatedNode(node) {
+  if (!node) return false;
+  if (node.type === 'StringLiteral') {
+    const val = node.value.toLowerCase();
+    return val === 'admin' || val === 'root' || val === 'superuser';
+  }
+  if (node.type === 'ObjectExpression') {
+    for (const prop of node.properties) {
+      if (prop.key && isElevatedKeyword(String(prop.key.name || prop.key.value).toLowerCase())) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 function getTestedRequestProperty(node, scope) {
   if (!node) return null;
 
-  // Pattern: x === "some_secret_key"
   if (node.type === 'BinaryExpression') {
     if (isUntrustedOrIdentifier(node.left, scope) && isLiteral(node.right)) {
       return {
@@ -102,7 +146,6 @@ function getTestedRequestProperty(node, scope) {
     }
   }
 
-  // Pattern: if (req.body.override) or if (is_admin_override)
   if (isUntrustedOrIdentifier(node, scope)) {
     return {
       name: extractName(node),
@@ -119,17 +162,14 @@ function isLiteral(node) {
 
 function isUntrustedOrIdentifier(n, scope) {
   if (!n) return false;
-  // Direct req.body.x
   if (isReqMember(n)) return true;
 
-  // Identifier that was destructured from req or declared locally
   if (n.type === 'Identifier') {
     if (scope && scope.getBinding) {
       const binding = scope.getBinding(n.name);
       if (binding && binding.path) {
         const init = binding.path.node.init;
         if (init && isReqMember(init)) return true;
-        // Check pattern: const { ticket } = req.body
         const parent = binding.path.parent;
         if (parent && parent.declarations) {
           for (const decl of parent.declarations) {
@@ -138,7 +178,6 @@ function isUntrustedOrIdentifier(n, scope) {
         }
       }
     }
-    // Any identifier compared to a secret literal before returning elevated tokens
     return true;
   }
 

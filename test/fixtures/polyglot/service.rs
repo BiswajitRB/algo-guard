@@ -21,3 +21,4 @@ async fn compute_workload() -> impl Responder {
 
     HttpResponse::Ok().body(format!("Bytes: {}", buffer.len()))
 }
+

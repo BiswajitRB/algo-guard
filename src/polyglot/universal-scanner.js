@@ -6,7 +6,12 @@
 
 export function scanPolyglotFile(filePath, code) {
   const findings = [];
-  const lines = code.split('\n');
+  // Strip block comments /* ... */ to prevent false positives in commented out code,
+  // while preserving exact line counts so reported line numbers remain accurate
+  const sanitizedCode = code.replace(/\/\*[\s\S]*?\*\//g, (match) => {
+    return '\n'.repeat((match.match(/\n/g) || []).length);
+  });
+  const lines = sanitizedCode.split('\n');
   const ext = filePath.slice(filePath.lastIndexOf('.')).toLowerCase();
 
   let currentRoute = null;
@@ -172,3 +177,4 @@ function getLanguageName(ext) {
     default: return 'Polyglot';
   }
 }
+

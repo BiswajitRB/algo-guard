@@ -25,3 +25,4 @@ func RegisterRoutes(r *gin.Engine) {
 		c.JSON(200, gin.H{"sum": sum, "bytes": len(buf)})
 	})
 }
+

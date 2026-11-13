@@ -26,10 +26,14 @@ const SUPPORTED_EXTENSIONS = new Set([
   '.rs'                                         // Rust (Actix, Axum)
 ]);
 
-const IGNORED_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'coverage', '.next', '__pycache__', 'target', '.gradle']);
+const IGNORED_DIRS = new Set([
+  'node_modules', '.git', 'dist', 'build', 'coverage', '.next',
+  '__pycache__', 'target', '.gradle', '.turbo', '.venv', 'venv'
+]);
 
-export async function scanDirectory(targetDir) {
-  const files = collectFiles(targetDir);
+export async function scanDirectory(targetDir, options = {}) {
+  const customIgnores = options.ignorePatterns || [];
+  const files = collectFiles(targetDir, customIgnores);
   const allFindings = [];
 
   // End-to-End Cross-File Graph Analyzer
@@ -82,7 +86,23 @@ export async function scanDirectory(targetDir) {
 export function scanPython(filePath) {
   try {
     const pythonScript = path.join(__dirname, 'python_scanner.py');
-    const stdout = execFileSync('python', [pythonScript, filePath], { encoding: 'utf-8' });
+    // Resilient fallback across Linux (python3), Windows (python), and custom envs
+    const pythonCandidates = [
+      process.env.PYTHON_BIN,
+      process.platform === 'win32' ? 'python' : 'python3',
+      process.platform === 'win32' ? 'python3' : 'python'
+    ].filter(Boolean);
+
+    let stdout = null;
+    for (const bin of pythonCandidates) {
+      try {
+        stdout = execFileSync(bin, [pythonScript, filePath], { encoding: 'utf-8' });
+        if (stdout !== null) break;
+      } catch (e) {
+        // Try next candidate
+      }
+    }
+
     const findings = JSON.parse(stdout || '[]');
     return findings.map(f => ({
       ...f,
@@ -171,6 +191,10 @@ export function scanCode(code, filePath = 'unknown.js') {
 
     IfStatement(path) {
       checkAuthBypass(path, filePath, wrapContext(context, currentRoute));
+    },
+
+    ConditionalExpression(path) {
+      checkAuthBypass(path, filePath, wrapContext(context, currentRoute));
     }
   });
 
@@ -191,7 +215,7 @@ function wrapContext(baseContext, currentRoute) {
   };
 }
 
-function collectFiles(dir) {
+function collectFiles(dir, customIgnores = []) {
   let results = [];
   if (!fs.existsSync(dir)) return results;
 
@@ -203,10 +227,12 @@ function collectFiles(dir) {
   const list = fs.readdirSync(dir);
   for (const item of list) {
     if (IGNORED_DIRS.has(item)) continue;
+    if (customIgnores.some(pattern => item.includes(pattern))) continue;
+
     const fullPath = path.join(dir, item);
     const itemStat = fs.statSync(fullPath);
     if (itemStat.isDirectory()) {
-      results = results.concat(collectFiles(fullPath));
+      results = results.concat(collectFiles(fullPath, customIgnores));
     } else if (SUPPORTED_EXTENSIONS.has(path.extname(item))) {
       results.push(fullPath);
     }

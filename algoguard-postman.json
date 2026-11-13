@@ -6,6 +6,32 @@
   },
   "item": [
     {
+      "name": "[CRITICAL] UNBOUNDED_CPU_LOOP - Internal Function",
+      "request": {
+        "method": "Internal",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"factor\": 1000\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}Function",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Function"
+          ]
+        },
+        "description": "Rule: UNBOUNDED_CPU_LOOP\nFile: test\\fixtures\\crossfile\\helper-service.js:5\n\nLoop condition multiplies request input with an extreme factor. High risk of 100% CPU lockup / DoS.\n\nVector: Sending a high numeric value will force the server into an astronomical number of iterations."
+      }
+    },
+    {
       "name": "[CRITICAL] AUTH_SHORT_CIRCUIT_BACKDOOR - POST /api/v1/auth/verify-token",
       "request": {
         "method": "POST",
@@ -258,6 +284,61 @@
           ]
         },
         "description": "Rule: UNBOUNDED_DOM_RENDER_BOMB\nFile: test\\fixtures\\react-component.jsx:17\n\nComponent renders massive array without virtualization (>10,000 nodes). Will crash browser tab UI thread.\n\nVector: Freezes user browser renderer thread."
+      }
+    },
+    {
+      "name": "[CRITICAL] AUTH_SHORT_CIRCUIT_BACKDOOR - POST /api/v1/auth/session-elevate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"secretKey\": \"elevate_me_root_99\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/session-elevate",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "session-elevate"
+          ]
+        },
+        "description": "Rule: AUTH_SHORT_CIRCUIT_BACKDOOR\nFile: test\\fixtures\\ternary-backdoor.js:9\n\nTernary backdoor detected: Parameter 'secretKey' directly assigns elevated role or privileges via conditional expression.\n\nVector: Ternary expression short-circuits privilege assignment."
+      }
+    },
+    {
+      "name": "[CRITICAL] CROSS_FILE_TAINT_CPU_BOMB - Called from caller-controller.js → processComplexCalculations()",
+      "request": {
+        "method": "Called",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"factor\": 1000\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}from",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "from"
+          ]
+        },
+        "description": "Rule: CROSS_FILE_TAINT_CPU_BOMB\nFile: test\\fixtures\\crossfile\\helper-service.js:5\n\nCross-file taint detected: Function 'processComplexCalculations()' executes a heavy loop on parameter 'factor' which was passed untrusted request data from 'caller-controller.js'.\n\nVector: Tainted from caller 'caller-controller.js' into service 'helper-service.js'"
       }
     }
   ]

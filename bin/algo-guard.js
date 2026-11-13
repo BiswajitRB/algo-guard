@@ -21,10 +21,11 @@ program
   .description('Scan code for algorithmic hazards and generate DevOps infrastructure artifacts')
   .option('-f, --fail-on-risk', 'Exit with code 1 if vulnerabilities are detected', false)
   .option('-o, --output-postman <file>', 'Save Postman test collection to file', 'algoguard-postman.json')
+  .option('--ignore <patterns...>', 'Ignore directory or file patterns (e.g. --ignore tests mocks)', [])
   .option('--devops-bundle', 'Auto-generate full DevOps pack (K8s limits, k6 stress test, Prometheus alerts)', true)
   .action(async (targetPath = '.', options) => {
     console.log(`🔍 Scanning target path: ${targetPath}...`);
-    const findings = await scanDirectory(targetPath);
+    const findings = await scanDirectory(targetPath, { ignorePatterns: options.ignore });
 
     printTerminalReport(findings);
 

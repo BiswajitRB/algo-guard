@@ -55,7 +55,13 @@ async function runTests() {
   assert.ok(crossFindings.length > 0, 'Must detect cross-file taint from controller into helper service');
   console.log('✅ PASS: End-to-End Cross-File Taint Tracking successfully traced parameters across modules.');
 
-  // Test 10: DevOps Bundle Generators (Kubernetes, k6, Prometheus)
+  // Test 10: Ternary Operator Backdoor Detection
+  const ternaryFindings = findings.filter(f => f.filePath.includes('ternary-backdoor'));
+  assert.ok(ternaryFindings.length > 0, 'Ternary backdoor must be detected');
+  assert.ok(ternaryFindings[0].message.includes('Ternary backdoor detected'), 'Should explicitly identify ternary pattern');
+  console.log('✅ PASS: Ternary operator backdoor expression (? :) successfully detected.');
+
+  // Test 11: DevOps Bundle Generators (Kubernetes, k6, Prometheus)
   const { generateK8sRecommendations } = await import('../src/devops/k8s-generator.js');
   const { generateK6Script } = await import('../src/devops/k6-generator.js');
   const { generatePrometheusRules } = await import('../src/devops/prometheus-generator.js');
@@ -68,7 +74,7 @@ async function runTests() {
   assert.ok(prom.includes('kind: PrometheusRule'), 'Prometheus rules must be valid CRD');
   console.log('✅ PASS: DevOps Infrastructure artifacts (K8s, k6, Prometheus) generated.');
 
-  console.log('\n🎉 ALL 10 COMPREHENSIVE END-TO-END & POLYGLOT TEST SUITES PASSED!\n');
+  console.log('\n🎉 ALL 11 COMPREHENSIVE END-TO-END & POLYGLOT TEST SUITES PASSED!\n');
 }
 
 runTests().catch(err => {
