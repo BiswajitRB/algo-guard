@@ -16,3 +16,4 @@ router.post('/api/v1/auth/validate-tag', (req, res) => {
 });
 
 export default router;
+

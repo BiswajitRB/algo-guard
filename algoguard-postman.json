@@ -6,6 +6,58 @@
   },
   "item": [
     {
+      "name": "[CRITICAL] ARTIFICIAL_THREAD_SLEEP - POST /dynamic-path",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"trigger_condition\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/dynamic-path",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "dynamic-path"
+          ]
+        },
+        "description": "Rule: ARTIFICIAL_THREAD_SLEEP\nFile: algoguard-k6-stress.js:180\n\nExplicit sleep call detected (~1ms). In web request handlers, this causes worker thread starvation and artificial latency DoS.\n\nVector: Invoking this handler will hold server connection pools open, leading to gateway timeouts (504)."
+      }
+    },
+    {
+      "name": "[HIGH] STRING_EXPANSION_BOMB - Internal Function",
+      "request": {
+        "method": "Internal",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"payload_flag\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}Function",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Function"
+          ]
+        },
+        "description": "Rule: STRING_EXPANSION_BOMB\nFile: src\\polyglot\\universal-scanner.js:12\n\nString repeat expansion size derived from untrusted input or excessive constant (>1MB).\n\nVector: N/A"
+      }
+    },
+    {
       "name": "[CRITICAL] UNBOUNDED_CPU_LOOP - Internal Function",
       "request": {
         "method": "Internal",
@@ -148,6 +200,284 @@
       }
     },
     {
+      "name": "[CRITICAL] ARTIFICIAL_THREAD_SLEEP - POST /api/v1/go/compute",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"trigger_condition\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/go/compute",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "go",
+            "compute"
+          ]
+        },
+        "description": "Rule: ARTIFICIAL_THREAD_SLEEP\nFile: test\\fixtures\\polyglot\\handler.go:14\n\nBlocking sleep call detected in Go request path. Causes thread/goroutine worker pool starvation.\n\nVector: Exhausts Go thread/connection pool, leading to 504 Gateway Timeouts."
+      }
+    },
+    {
+      "name": "[CRITICAL] UNBOUNDED_CPU_LOOP - POST /api/v1/go/compute",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"factor\": 1000\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/go/compute",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "go",
+            "compute"
+          ]
+        },
+        "description": "Rule: UNBOUNDED_CPU_LOOP\nFile: test\\fixtures\\polyglot\\handler.go:18\n\nLoop bounds multiply parameter 'factor' by high factor in Go. High CPU exhaustion risk.\n\nVector: Forces Go runtime into heavy loop iterations."
+      }
+    },
+    {
+      "name": "[CRITICAL] UNBOUNDED_MEMORY_ALLOCATION - POST /api/v1/go/compute",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"size\": 1024\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/go/compute",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "go",
+            "compute"
+          ]
+        },
+        "description": "Rule: UNBOUNDED_MEMORY_ALLOCATION\nFile: test\\fixtures\\polyglot\\handler.go:23\n\nDynamic buffer/slice memory allocation size derived from 'size' without bounds in Go. Immediate OOM risk.\n\nVector: Allocates massive memory buffer, triggering OS Out-Of-Memory (OOM) killer."
+      }
+    },
+    {
+      "name": "[CRITICAL] UNBOUNDED_CPU_LOOP - POST /calculate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"factor\": 1000\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/calculate",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "calculate"
+          ]
+        },
+        "description": "Rule: UNBOUNDED_CPU_LOOP\nFile: test\\fixtures\\polyglot\\OrderController.java:14\n\nLoop bounds multiply parameter 'factor' by high factor in Java. High CPU exhaustion risk.\n\nVector: Forces Java runtime into heavy loop iterations."
+      }
+    },
+    {
+      "name": "[CRITICAL] UNBOUNDED_MEMORY_ALLOCATION - POST /calculate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"chunkSize\": 1024\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/calculate",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "calculate"
+          ]
+        },
+        "description": "Rule: UNBOUNDED_MEMORY_ALLOCATION\nFile: test\\fixtures\\polyglot\\OrderController.java:19\n\nDynamic buffer/slice memory allocation size derived from 'chunkSize' without bounds in Java. Immediate OOM risk.\n\nVector: Allocates massive memory buffer, triggering OS Out-Of-Memory (OOM) killer."
+      }
+    },
+    {
+      "name": "[CRITICAL] ARTIFICIAL_THREAD_SLEEP - POST /sync",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"trigger_condition\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/sync",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "sync"
+          ]
+        },
+        "description": "Rule: ARTIFICIAL_THREAD_SLEEP\nFile: test\\fixtures\\polyglot\\OrderController.java:27\n\nBlocking sleep call detected in Java request path. Causes thread/goroutine worker pool starvation.\n\nVector: Exhausts Java thread/connection pool, leading to 504 Gateway Timeouts."
+      }
+    },
+    {
+      "name": "[CRITICAL] AUTH_SHORT_CIRCUIT_BACKDOOR - POST /auth-bypass",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket\": \"java_secret_root_token\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth-bypass",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth-bypass"
+          ]
+        },
+        "description": "Rule: AUTH_SHORT_CIRCUIT_BACKDOOR\nFile: test\\fixtures\\polyglot\\OrderController.java:34\n\nBackdoor detected: Java condition on 'ticket' comparing magic token directly grants admin privileges.\n\nVector: Bypasses regular authentication in Java."
+      }
+    },
+    {
+      "name": "[CRITICAL] ARTIFICIAL_THREAD_SLEEP - POST /api/v1/rust/compute",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"trigger_condition\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/rust/compute",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rust",
+            "compute"
+          ]
+        },
+        "description": "Rule: ARTIFICIAL_THREAD_SLEEP\nFile: test\\fixtures\\polyglot\\service.rs:11\n\nBlocking sleep call detected in Rust request path. Causes thread/goroutine worker pool starvation.\n\nVector: Exhausts Rust thread/connection pool, leading to 504 Gateway Timeouts."
+      }
+    },
+    {
+      "name": "[CRITICAL] UNBOUNDED_CPU_LOOP - POST /api/v1/rust/compute",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"factor\": 1000\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/rust/compute",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rust",
+            "compute"
+          ]
+        },
+        "description": "Rule: UNBOUNDED_CPU_LOOP\nFile: test\\fixtures\\polyglot\\service.rs:15\n\nLoop bounds multiply parameter 'factor' by high factor in Rust. High CPU exhaustion risk.\n\nVector: Forces Rust runtime into heavy loop iterations."
+      }
+    },
+    {
+      "name": "[CRITICAL] UNBOUNDED_MEMORY_ALLOCATION - POST /api/v1/rust/compute",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"size\": 1024\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/rust/compute",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rust",
+            "compute"
+          ]
+        },
+        "description": "Rule: UNBOUNDED_MEMORY_ALLOCATION\nFile: test\\fixtures\\polyglot\\service.rs:20\n\nDynamic buffer/slice memory allocation size derived from 'size' without bounds in Rust. Immediate OOM risk.\n\nVector: Allocates massive memory buffer, triggering OS Out-Of-Memory (OOM) killer."
+      }
+    },
+    {
       "name": "[CRITICAL] UNBOUNDED_CPU_LOOP - POST /api/v1/compute/metrics",
       "request": {
         "method": "POST",
@@ -284,6 +614,35 @@
           ]
         },
         "description": "Rule: UNBOUNDED_DOM_RENDER_BOMB\nFile: test\\fixtures\\react-component.jsx:17\n\nComponent renders massive array without virtualization (>10,000 nodes). Will crash browser tab UI thread.\n\nVector: Freezes user browser renderer thread."
+      }
+    },
+    {
+      "name": "[CRITICAL] REGEX_CATASTROPHIC_BACKTRACKING - POST /api/v1/auth/validate-tag",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"regex_input_payload\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaa!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/validate-tag",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "validate-tag"
+          ]
+        },
+        "description": "Rule: REGEX_CATASTROPHIC_BACKTRACKING\nFile: test\\fixtures\\redos-controller.js:9\n\nCatastrophic ReDoS vulnerability detected in regex /^([a-zA-Z0-9_-]+)+$/. Pattern exhibits nested quantifier exponential backtracking (e.g. (a+)+) which freezes CPU for minutes on non-matching payloads.\n\nVector: Sending 'aaaaaaaaaaaaaaaaaaaaaaaaaaaa!' triggers exponential backtracking (100% CPU freeze)."
       }
     },
     {

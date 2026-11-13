@@ -15,6 +15,7 @@ import { checkReDosBombs } from './rules/redos-bombs.js';
 import { scanPolyglotFile } from './polyglot/universal-scanner.js';
 import { ProjectCallGraph } from './analysis/cross-file-graph.js';
 import { estimateCloudImpact } from './analysis/cost-impact.js';
+import { getChangedFiles } from './utils/git-diff.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,7 +35,21 @@ const IGNORED_DIRS = new Set([
 
 export async function scanDirectory(targetDir, options = {}) {
   const customIgnores = options.ignorePatterns || [];
-  const files = collectFiles(targetDir, customIgnores);
+  let files = [];
+
+  // Monorepo High-Speed PR Diff Optimization
+  if (options.diffBase || options.stagedOnly) {
+    const changed = getChangedFiles(options.diffBase, options.stagedOnly);
+    if (changed && changed.length > 0) {
+      files = changed.filter(f => SUPPORTED_EXTENSIONS.has(path.extname(f)));
+      console.log(`⚡ Monorepo Diff Mode: Scanning ${files.length} modified PR file(s)...`);
+    } else {
+      files = collectFiles(targetDir, customIgnores);
+    }
+  } else {
+    files = collectFiles(targetDir, customIgnores);
+  }
+
   const allFindings = [];
 
   // End-to-End Cross-File Graph Analyzer
@@ -236,6 +251,7 @@ function collectFiles(dir, customIgnores = []) {
   const list = fs.readdirSync(dir);
   for (const item of list) {
     if (IGNORED_DIRS.has(item)) continue;
+    if (item.startsWith('algoguard-')) continue; // Ignore generated AlgoGuard artifacts
     if (customIgnores.some(pattern => item.includes(pattern))) continue;
 
     const fullPath = path.join(dir, item);

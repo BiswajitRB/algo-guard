@@ -11,11 +11,12 @@ import { generatePrometheusRules } from './devops/prometheus-generator.js';
 export async function run() {
   try {
     const scanPath = core.getInput('scan-path') || '.';
-    const failOnRisk = core.getInput('fail-on-risk') !== 'false';
+    const failOnRisk = core.getInput('fail-on-risk') === 'true'; // Safe default: false
+    const diffBase = core.getInput('diff-base') || '';
     const postmanExport = core.getInput('postman-export') || 'algoguard-postman-collection.json';
     const githubToken = core.getInput('github-token') || process.env.GITHUB_TOKEN;
 
-    const findings = await scanDirectory(scanPath);
+    const findings = await scanDirectory(scanPath, { diffBase });
 
     // Terminal output
     printTerminalReport(findings);

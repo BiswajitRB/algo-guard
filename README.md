@@ -1,6 +1,6 @@
 # 🛡️ AlgoGuard
 
-> **Automated AST-powered GitHub Action & CLI that detects hidden CPU bombs, artificial thread starvation (sleep attacks), memory bombs, and backdoor short-circuits in Pull Requests.**
+> **The SRE & FinOps Pre-Deployment Shield: Automated Runtime Hazard Detection, Kubernetes Resource Sizing, and k6 Stress Generation for Pull Requests.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-green.svg)](https://nodejs.org/)

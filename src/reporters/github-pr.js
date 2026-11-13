@@ -65,6 +65,7 @@ export async function reportToGitHub(findings, token) {
             }
             commentBody += `\`\`\`bash\n# Test with cURL:\ncurl -X ${routeMethod} "http://localhost:3000${routeUrl}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"${f.attackVector.parameter}": ${JSON.stringify(f.attackVector.exploitValue)}}'\n\`\`\`\n`;
           }
+          commentBody += `> 💡 *False positive or intentional background script? Add \`// algoguard-ignore\` above line ${f.line} to suppress this warning.*\n\n`;
         });
       }
 

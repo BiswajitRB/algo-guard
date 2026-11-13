@@ -77,3 +77,4 @@ function findGitDir(startDir) {
   }
   return null;
 }
+

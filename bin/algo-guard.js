@@ -46,13 +46,19 @@ program
 program
   .command('scan [targetPath]')
   .description('Scan code for algorithmic hazards and generate DevOps infrastructure artifacts')
-  .option('-f, --fail-on-risk', 'Exit with code 1 if vulnerabilities are detected', false)
+  .option('-f, --fail-on-risk', 'Exit with code 1 if vulnerabilities are detected (default: false)', false)
   .option('-o, --output-postman <file>', 'Save Postman test collection to file', 'algoguard-postman.json')
   .option('--ignore <patterns...>', 'Ignore directory or file patterns (e.g. --ignore tests mocks)', [])
+  .option('--diff <baseBranch>', 'High-speed Monorepo Mode: Only scan files changed against base branch (e.g. --diff main)')
+  .option('--staged', 'Only scan staged git files (ideal for pre-commit hooks)', false)
   .option('--devops-bundle', 'Auto-generate full DevOps pack (K8s limits, k6 stress test, Prometheus alerts)', true)
   .action(async (targetPath = '.', options) => {
     console.log(`🔍 Scanning target path: ${targetPath}...`);
-    const findings = await scanDirectory(targetPath, { ignorePatterns: options.ignore });
+    const findings = await scanDirectory(targetPath, {
+      ignorePatterns: options.ignore,
+      diffBase: options.diff,
+      stagedOnly: options.staged
+    });
 
     printTerminalReport(findings);
 

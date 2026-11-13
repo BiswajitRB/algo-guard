@@ -54,6 +54,7 @@ export function printTerminalReport(findings) {
       console.log(`      ${pc.dim('•')} ${pc.bold('Estimated Surge:')}   ${pc.red(pc.bold(finding.cloudImpact.cloudCostSurgeWeekly))} / week (${finding.cloudImpact.cloudCostSurgeMonthly} / mo)`);
       console.log(`      ${pc.dim('•')} ${pc.bold('Failure Mode:')}       ${finding.cloudImpact.failureMode}`);
     }
+    console.log(`   ${pc.dim('💡 To dismiss intentional background jobs: add // algoguard-ignore above this line')}`);
     console.log(pc.dim('─'.repeat(60)));
   });
 }

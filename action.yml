@@ -1,19 +1,23 @@
-name: 'AlgoGuard'
-description: 'Detects hidden CPU bombs, artificial sleep DoS, memory bombs, and auth backdoors in PR code.'
+name: 'AlgoGuard: SRE & FinOps Pre-Deployment Shield'
+description: 'Detects algorithmic CPU/Memory bombs, auto-scales Kubernetes limits, and generates k6 stress tests in PRs.'
 author: 'AlgoGuard Team'
 branding:
   icon: 'shield'
-  color: 'red'
+  color: 'blue'
 
 inputs:
   scan-path:
-    description: 'Directory path to scan (defaults to repository root or src)'
+    description: 'Directory path to scan (defaults to repository root)'
     required: false
     default: '.'
   fail-on-risk:
-    description: 'Whether to fail the CI step if high-risk or critical issues are found'
+    description: 'Whether to fail the CI step if high-risk or critical issues are found (default: false for zero-friction warnings)'
     required: false
-    default: 'true'
+    default: 'false'
+  diff-base:
+    description: 'Monorepo optimization: only scan files changed against base branch (e.g. origin/main)'
+    required: false
+    default: ''
   postman-export:
     description: 'Path where generated Postman test collection should be saved'
     required: false
@@ -25,4 +29,3 @@ inputs:
 runs:
   using: 'node20'
   main: 'src/index.js'
-
