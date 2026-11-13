@@ -1,0 +1,27 @@
+name: 'AlgoGuard'
+description: 'Detects hidden CPU bombs, artificial sleep DoS, memory bombs, and auth backdoors in PR code.'
+author: 'AlgoGuard Team'
+branding:
+  icon: 'shield'
+  color: 'red'
+
+inputs:
+  scan-path:
+    description: 'Directory path to scan (defaults to repository root or src)'
+    required: false
+    default: '.'
+  fail-on-risk:
+    description: 'Whether to fail the CI step if high-risk or critical issues are found'
+    required: false
+    default: 'true'
+  postman-export:
+    description: 'Path where generated Postman test collection should be saved'
+    required: false
+    default: 'algoguard-postman-collection.json'
+  github-token:
+    description: 'GitHub token to comment on Pull Requests (e.g. ${{ secrets.GITHUB_TOKEN }})'
+    required: false
+
+runs:
+  using: 'node20'
+  main: 'src/index.js'

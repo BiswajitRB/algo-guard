@@ -1,0 +1,35 @@
+{
+  "name": "algo-guard",
+  "version": "1.0.0",
+  "description": "GitHub Action & CLI to detect algorithmic resource bombs, sleep attacks, and hidden backdoor bypasses in PRs.",
+  "main": "src/index.js",
+  "bin": {
+    "algo-guard": "./bin/algo-guard.js"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "node test/run-tests.js",
+    "scan": "node bin/algo-guard.js scan"
+  },
+  "keywords": [
+    "devops",
+    "security",
+    "github-action",
+    "ast",
+    "logic-bombs",
+    "backdoor-detection",
+    "cpu-bombs",
+    "sast",
+    "appsec"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.0",
+    "@babel/parser": "^7.26.9",
+    "@babel/traverse": "^7.26.9",
+    "commander": "^13.1.0",
+    "picocolors": "^1.1.1"
+  }
+}
