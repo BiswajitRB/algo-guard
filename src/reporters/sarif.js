@@ -64,3 +64,4 @@ export function exportSarifReport(findings, outputPath = 'algoguard.sarif') {
   fs.writeFileSync(outputPath, JSON.stringify(sarif, null, 2), 'utf-8');
   return outputPath;
 }
+

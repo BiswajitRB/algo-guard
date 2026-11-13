@@ -1,15 +1,21 @@
+<p align="center">
+  <img src="./assets/logo.png" width="160" alt="AlgoGuard Mascot" />
+</p>
+
 # 🛡️ AlgoGuard
 
 > **The SRE & FinOps Pre-Deployment Shield: Automated Runtime Hazard Detection, Kubernetes Resource Sizing, and k6 Stress Generation for Pull Requests.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-green.svg)](https://nodejs.org/)
-[![Python](https://img.shields.io/badge/Python-%3E%3D3.8-yellow.svg)](https://python.org/)
-[![Java](https://img.shields.io/badge/Java-Spring%20Boot-orange.svg)](https://spring.io/)
-[![Go](https://img.shields.io/badge/Go-Gin%20%7C%20Fiber-00ADD8.svg)](https://go.dev/)
-[![Rust](https://img.shields.io/badge/Rust-Actix%20%7C%20Axum-black.svg)](https://www.rust-lang.org/)
-[![React](https://img.shields.io/badge/React-JSX%20%7C%20TSX-61dafb.svg)](https://react.dev/)
-[![GitHub Action](https://img.shields.io/badge/GitHub%20Action-Ready-orange.svg)](https://github.com/features/actions)
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-%3E%3D20-green.svg" alt="Node.js"></a>
+  <a href="https://python.org/"><img src="https://img.shields.io/badge/Python-%3E%3D3.8-yellow.svg" alt="Python"></a>
+  <a href="https://spring.io/"><img src="https://img.shields.io/badge/Java-Spring%20Boot-orange.svg" alt="Java"></a>
+  <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-Gin%20%7C%20Fiber-00ADD8.svg" alt="Go"></a>
+  <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/Rust-Actix%20%7C%20Axum-black.svg" alt="Rust"></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-JSX%20%7C%20TSX-61dafb.svg" alt="React"></a>
+  <a href="https://github.com/features/actions"><img src="https://img.shields.io/badge/GitHub%20Action-Ready-orange.svg" alt="GitHub Action"></a>
+</p>
 
 ---
 

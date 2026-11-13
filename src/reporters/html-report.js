@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import { generateK8sRecommendations } from '../devops/k8s-generator.js';
 import { generateK6Script } from '../devops/k6-generator.js';
 import { generatePrometheusRules } from '../devops/prometheus-generator.js';
@@ -7,6 +8,15 @@ export function exportHtmlReport(findings, outputPath = 'algoguard-report.html')
   const k8s = generateK8sRecommendations(findings);
   const k6 = generateK6Script(findings);
   const prom = generatePrometheusRules(findings);
+
+  let logoDataUri = '';
+  try {
+    const logoPath = path.resolve('assets/logo.png');
+    if (fs.existsSync(logoPath)) {
+      const base64 = fs.readFileSync(logoPath).toString('base64');
+      logoDataUri = `data:image/png;base64,${base64}`;
+    }
+  } catch {}
 
   const criticalCount = findings.filter(f => f.severity === 'CRITICAL').length;
   const highCount = findings.filter(f => f.severity === 'HIGH').length;
@@ -68,9 +78,12 @@ export function exportHtmlReport(findings, outputPath = 'algoguard-report.html')
 <body>
   <div class="container">
     <header>
-      <div>
-        <h1>🛡️ AlgoGuard Security & Pre-Deployment Report</h1>
-        <p style="color: var(--text-dim); font-size: 13px; margin-top: 4px;">Automated SRE & FinOps Hazard Audit</p>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        ${logoDataUri ? `<img src="${logoDataUri}" width="54" style="border-radius: 8px;" alt="AlgoGuard Knight" />` : ''}
+        <div>
+          <h1>🛡️ AlgoGuard Security & Pre-Deployment Report</h1>
+          <p style="color: var(--text-dim); font-size: 13px; margin-top: 4px;">Automated SRE & FinOps Hazard Audit</p>
+        </div>
       </div>
       <div>
         ${criticalCount > 0 
@@ -186,3 +199,4 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+

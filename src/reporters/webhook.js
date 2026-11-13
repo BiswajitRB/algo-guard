@@ -64,3 +64,4 @@ export async function sendDiscordWebhook(webhookUrl, findings, repoName = 'Repos
     return false;
   }
 }
+

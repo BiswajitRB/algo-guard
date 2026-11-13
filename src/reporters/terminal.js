@@ -1,12 +1,27 @@
 import pc from 'picocolors';
 
 export function printTerminalReport(findings) {
-  console.log('\n' + pc.bold(pc.cyan('🛡️  AlgoGuard Security & Algorithmic Bomb Scanner')));
-  console.log(pc.dim('─'.repeat(60)));
+  const banner = `
+            ,-----.
+           /   |   \\           ___   _             ____                     _ 
+          /____|____\\         / _ \\ | | __ _  ___ / ___|_   _  __ _ _ __ __| |
+        .'  .-----.  '.      / /_\\ \\| |/ _\` |/ _ \\ |  _| | | |/ _\` | '__/ _\` |
+       /   |  ● ●  |   \\    /  _   \\ | (_| | (_) | |_| |_| | (_| | | | (_| |
+      |     '-----'     |   \\_/ \\___/_|\\__, |\\___/ \\____|\\__,_|\\__,_|_|  \\__,_|
+      '.      \\_/      .'              |___/  SRE & FinOps Pre-Deployment Shield
+       (O)  /|   |\\  (O)
+      / |  | |___| |  | \\
+     /  |  |_______|  |  )
+    /   \\   /|   |\\   / /
+  ▼'       (_)   (_)   )
+`;
+
+  console.log(pc.cyan(banner));
+  console.log(pc.dim('─'.repeat(68)));
 
   if (findings.length === 0) {
-    console.log(pc.green('✔ No algorithmic bombs, thread starvation, or backdoor logic detected!'));
-    console.log(pc.dim('─'.repeat(60)) + '\n');
+    console.log(pc.green('✔  No algorithmic bombs, thread starvation, or backdoor logic detected!'));
+    console.log(pc.dim('─'.repeat(68)) + '\n');
     return;
   }
 
@@ -55,7 +70,6 @@ export function printTerminalReport(findings) {
       console.log(`      ${pc.dim('•')} ${pc.bold('Failure Mode:')}       ${finding.cloudImpact.failureMode}`);
     }
     console.log(`   ${pc.dim('💡 To dismiss intentional background jobs: add // algoguard-ignore above this line')}`);
-    console.log(pc.dim('─'.repeat(60)));
+    console.log(pc.dim('─'.repeat(68)));
   });
 }
-

@@ -83,3 +83,4 @@ jobs:
   console.log('\n🎉 AlgoGuard initialization complete!');
   console.log('👉 Next: Run "npx algo-guard scan" or commit .github/workflows/algo-guard.yml to enable in PRs.\n');
 }
+
