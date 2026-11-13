@@ -51,7 +51,27 @@ async function runTests() {
   assert.ok(pyFindings.some(f => f.ruleId === 'AUTH_SHORT_CIRCUIT_BACKDOOR'), 'Python auth backdoor detected');
   console.log('✅ PASS: Python (FastAPI/Flask) CPU bombs, sleep DoS, and auth backdoors detected.');
 
-  console.log('\n🎉 ALL 7 MULTI-LANGUAGE TEST SUITES PASSED PERFECTLY!\n');
+  // Test 8: DevOps Bundle Generators (Kubernetes, k6, Prometheus)
+  const { generateK8sRecommendations } = await import('../src/devops/k8s-generator.js');
+  const { generateK6Script } = await import('../src/devops/k6-generator.js');
+  const { generatePrometheusRules } = await import('../src/devops/prometheus-generator.js');
+
+  const k8s = generateK8sRecommendations(findings);
+  assert.ok(k8s.yaml.includes('limits:'), 'K8s config must include limits');
+  assert.ok(k8s.yaml.includes('proxy-read-timeout'), 'K8s config must include Ingress timeout');
+  console.log('✅ PASS: Kubernetes Deployment Limits & Ingress recommendations generated.');
+
+  const k6 = generateK6Script(findings);
+  assert.ok(k6.includes('import http from \'k6/http\''), 'k6 script must import k6/http');
+  assert.ok(k6.includes('thresholds:'), 'k6 script must include SLO thresholds');
+  console.log('✅ PASS: k6 Load Testing script generated with automated thresholds.');
+
+  const prom = generatePrometheusRules(findings);
+  assert.ok(prom.includes('kind: PrometheusRule'), 'Prometheus rules must be valid CRD');
+  assert.ok(prom.includes('HighLatencyOnEndpoint'), 'Prometheus rules must include latency alerts');
+  console.log('✅ PASS: Prometheus alerting rules generated.');
+
+  console.log('\n🎉 ALL 8 MULTI-LANGUAGE & DEVOPS TEST SUITES PASSED PERFECTLY!\n');
 }
 
 runTests().catch(err => {

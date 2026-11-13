@@ -37,7 +37,7 @@ export function printTerminalReport(findings) {
       
       const method = finding.route && finding.route.startsWith('POST') ? 'POST' : 'GET';
       let urlPath = '/api/endpoint';
-      if (finding.route && finding.route.includes(' ')) {
+      if (finding.route && finding.route.includes(' ') && !finding.route.includes('Internal')) {
         urlPath = finding.route.split(' ')[1];
       } else if (typeof finding.attackVector.exploitValue === 'string' && finding.attackVector.exploitValue.startsWith('/')) {
         urlPath = finding.attackVector.exploitValue;

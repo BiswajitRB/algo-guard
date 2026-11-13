@@ -1,8 +1,12 @@
 import * as core from '@actions/core';
+import fs from 'node:fs';
 import { scanDirectory } from './scanner.js';
 import { printTerminalReport } from './reporters/terminal.js';
 import { exportPostmanCollection } from './reporters/postman.js';
 import { reportToGitHub } from './reporters/github-pr.js';
+import { generateK8sRecommendations } from './devops/k8s-generator.js';
+import { generateK6Script } from './devops/k6-generator.js';
+import { generatePrometheusRules } from './devops/prometheus-generator.js';
 
 export async function run() {
   try {
@@ -16,11 +20,28 @@ export async function run() {
     // Terminal output
     printTerminalReport(findings);
 
-    // Postman collection export
+    // DevOps artifacts generation
     if (findings.length > 0) {
       exportPostmanCollection(findings, postmanExport);
       core.setOutput('postman-path', postmanExport);
-      console.log(`📦 Postman verification collection saved to: ${postmanExport}`);
+
+      const k8s = generateK8sRecommendations(findings);
+      fs.writeFileSync('algoguard-k8s.yaml', k8s.yaml, 'utf-8');
+      core.setOutput('k8s-path', 'algoguard-k8s.yaml');
+
+      const k6Script = generateK6Script(findings);
+      fs.writeFileSync('algoguard-k6-stress.js', k6Script, 'utf-8');
+      core.setOutput('k6-path', 'algoguard-k6-stress.js');
+
+      const promRules = generatePrometheusRules(findings);
+      fs.writeFileSync('algoguard-prometheus.yaml', promRules, 'utf-8');
+      core.setOutput('prometheus-path', 'algoguard-prometheus.yaml');
+
+      console.log(`📦 DevOps Artifacts Generated:`);
+      console.log(`   - Postman Collection:     ${postmanExport}`);
+      console.log(`   - Kubernetes Manifest:    algoguard-k8s.yaml`);
+      console.log(`   - k6 Load Testing Script: algoguard-k6-stress.js`);
+      console.log(`   - Prometheus Alert Rules: algoguard-prometheus.yaml`);
     }
 
     // GitHub PR report

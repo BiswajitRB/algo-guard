@@ -2,6 +2,9 @@ node_modules/
 dist/
 coverage/
 *.postman_json
+algoguard-*.yaml
+algoguard-*.js
+algoguard-*.json
 *.log
 .DS_Store
 Thumbs.db
