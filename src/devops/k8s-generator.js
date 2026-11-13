@@ -65,3 +65,4 @@ metadata:
     ingressTimeout
   };
 }
+

@@ -11,33 +11,70 @@ import { checkSleepBombs } from './rules/sleep-bombs.js';
 import { checkMemoryBombs } from './rules/memory-bombs.js';
 import { checkAuthBypass } from './rules/auth-bypass.js';
 import { checkReactHazards } from './rules/react-rules.js';
+import { scanPolyglotFile } from './polyglot/universal-scanner.js';
+import { ProjectCallGraph } from './analysis/cross-file-graph.js';
 import { estimateCloudImpact } from './analysis/cost-impact.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const SUPPORTED_EXTENSIONS = new Set(['.js', '.mjs', '.cjs', '.ts', '.jsx', '.tsx', '.py']);
-const IGNORED_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'coverage', '.next', '__pycache__']);
+const SUPPORTED_EXTENSIONS = new Set([
+  '.js', '.mjs', '.cjs', '.ts', '.jsx', '.tsx', // JavaScript, TypeScript, React
+  '.py',                                        // Python (FastAPI, Flask, Django)
+  '.go',                                        // Go (Gin, Fiber, Chi)
+  '.java',                                      // Java (Spring Boot, Jakarta)
+  '.rs'                                         // Rust (Actix, Axum)
+]);
+
+const IGNORED_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'coverage', '.next', '__pycache__', 'target', '.gradle']);
 
 export async function scanDirectory(targetDir) {
   const files = collectFiles(targetDir);
   const allFindings = [];
 
+  // End-to-End Cross-File Graph Analyzer
+  const callGraph = new ProjectCallGraph();
+
+  // Phase 1: Pre-index JS/TS files for cross-file call analysis
+  for (const filePath of files) {
+    const ext = path.extname(filePath);
+    if (['.js', '.mjs', '.ts', '.jsx', '.tsx'].includes(ext)) {
+      try {
+        const code = fs.readFileSync(filePath, 'utf-8');
+        callGraph.indexFile(filePath, code);
+        callGraph.findTaintedCalls(filePath, code);
+      } catch {}
+    }
+  }
+
+  // Phase 2: Scan individual files with specialized AST / Structural Parsers
   for (const filePath of files) {
     try {
       const ext = path.extname(filePath);
+
       if (ext === '.py') {
+        // Python AST Scanner
         const pythonFindings = scanPython(filePath);
         allFindings.push(...pythonFindings);
+      } else if (['.go', '.java', '.rs'].includes(ext)) {
+        // Polyglot Engine: Go, Java, Rust
+        const code = fs.readFileSync(filePath, 'utf-8');
+        const polyFindings = scanPolyglotFile(filePath, code);
+        allFindings.push(...polyFindings.map(f => ({ ...f, cloudImpact: estimateCloudImpact(f) })));
       } else {
+        // JavaScript / TypeScript / React AST
         const code = fs.readFileSync(filePath, 'utf-8');
         const findings = scanCode(code, filePath);
         allFindings.push(...findings);
       }
     } catch (err) {
-      // Ignore unparseable non-code files
+      // Ignore unparseable files
     }
   }
+
+  // Phase 3: Add Cross-File End-to-End Taint Analysis Findings
+  const crossFileFindings = callGraph.analyzeCrossFileHazards();
+  allFindings.push(...crossFileFindings.map(f => ({ ...f, cloudImpact: estimateCloudImpact(f) })));
 
   return allFindings;
 }
@@ -80,6 +117,13 @@ export function scanCode(code, filePath = 'unknown.js') {
 
   const context = {
     report(finding) {
+      // Check for inline suppression comments (// algoguard-ignore)
+      const lineIdx = finding.line - 1;
+      const currentLine = lines[lineIdx] || '';
+      const prevLine = lineIdx > 0 ? lines[lineIdx - 1] : '';
+      if (currentLine.includes('algoguard-ignore') || prevLine.includes('algoguard-ignore')) {
+        return; // Suppressed by developer
+      }
       findings.push(finding);
     },
     getCodeSlice(node) {
@@ -108,7 +152,6 @@ export function scanCode(code, filePath = 'unknown.js') {
         }
       }
 
-      // Check rules
       checkSleepBombs(path, filePath, wrapContext(context, currentRoute));
       checkMemoryBombs(path, filePath, wrapContext(context, currentRoute));
       checkReactHazards(path, filePath, wrapContext(context, currentRoute));

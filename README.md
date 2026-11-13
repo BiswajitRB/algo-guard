@@ -3,9 +3,12 @@
 > **Automated AST-powered GitHub Action & CLI that detects hidden CPU bombs, artificial thread starvation (sleep attacks), memory bombs, and backdoor short-circuits in Pull Requests.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/Node.js-%3E%3D20-green.svg)](https://nodejs.org/)
-[![Python Version](https://img.shields.io/badge/Python-%3E%3D3.8-yellow.svg)](https://python.org/)
-[![React Supported](https://img.shields.io/badge/React-JSX%20%7C%20TSX-61dafb.svg)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-green.svg)](https://nodejs.org/)
+[![Python](https://img.shields.io/badge/Python-%3E%3D3.8-yellow.svg)](https://python.org/)
+[![Java](https://img.shields.io/badge/Java-Spring%20Boot-orange.svg)](https://spring.io/)
+[![Go](https://img.shields.io/badge/Go-Gin%20%7C%20Fiber-00ADD8.svg)](https://go.dev/)
+[![Rust](https://img.shields.io/badge/Rust-Actix%20%7C%20Axum-black.svg)](https://www.rust-lang.org/)
+[![React](https://img.shields.io/badge/React-JSX%20%7C%20TSX-61dafb.svg)](https://react.dev/)
 [![GitHub Action](https://img.shields.io/badge/GitHub%20Action-Ready-orange.svg)](https://github.com/features/actions)
 
 ---
