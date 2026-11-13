@@ -120,6 +120,145 @@
         },
         "description": "Rule: ARTIFICIAL_THREAD_SLEEP\nFile: test\\fixtures\\malicious-sleep-dos.js:14\n\nExplicit sleep call detected (~8000ms). In web request handlers, this causes worker thread starvation and artificial latency DoS.\n\nVector: Invoking this handler will hold server connection pools open, leading to gateway timeouts (504)."
       }
+    },
+    {
+      "name": "[CRITICAL] UNBOUNDED_CPU_LOOP - POST /api/v1/compute/metrics",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"range_factor\": 1000\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/compute/metrics",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "compute",
+            "metrics"
+          ]
+        },
+        "description": "Rule: UNBOUNDED_CPU_LOOP\nFile: test\\fixtures\\python_api.py:19\n\nPython range() iteration bound is multiplied by input or exceeds safe threshold. High CPU DoS risk.\n\nVector: Sending large multiplier forces Python interpreter into astronomical loop count."
+      }
+    },
+    {
+      "name": "[CRITICAL] ARTIFICIAL_THREAD_SLEEP - POST /api/v1/system/sync-logs",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"trigger_condition\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/system/sync-logs",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "system",
+            "sync-logs"
+          ]
+        },
+        "description": "Rule: ARTIFICIAL_THREAD_SLEEP\nFile: test\\fixtures\\python_api.py:27\n\nBlocking sleep call detected in Python request path (12s). Causes worker pool starvation (Uvicorn/Gunicorn).\n\nVector: Starves Gunicorn/Uvicorn worker threads, inducing 504 Gateway Timeouts."
+      }
+    },
+    {
+      "name": "[CRITICAL] AUTH_SHORT_CIRCUIT_BACKDOOR - POST /api/v1/access/verify",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"auth_override\": \"py_secret_token_777\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/access/verify",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "access",
+            "verify"
+          ]
+        },
+        "description": "Rule: AUTH_SHORT_CIRCUIT_BACKDOOR\nFile: test\\fixtures\\python_api.py:33\n\nPython auth backdoor: Branch comparison against magic token 'py_secret_token_777' returns elevated permissions.\n\nVector: Bypasses authentication and directly returns admin privileges."
+      }
+    },
+    {
+      "name": "[CRITICAL] FRONTEND_BACKDOOR_CALL - Internal Function",
+      "request": {
+        "method": "Internal",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"url_query_flag\": \"/api/v1/users/me?skip_auth=true\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}Function",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Function"
+          ]
+        },
+        "description": "Rule: FRONTEND_BACKDOOR_CALL\nFile: test\\fixtures\\react-component.jsx:8\n\nReact component hardcodes a backdoor or debug bypass endpoint call: '/api/v1/users/me?skip_auth=true'\n\nVector: Client component is secretly invoking elevated or unauthenticated debug endpoints."
+      }
+    },
+    {
+      "name": "[HIGH] UNBOUNDED_DOM_RENDER_BOMB - Internal Function",
+      "request": {
+        "method": "Internal",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"dom_node_count\": 10000\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}Function",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Function"
+          ]
+        },
+        "description": "Rule: UNBOUNDED_DOM_RENDER_BOMB\nFile: test\\fixtures\\react-component.jsx:17\n\nComponent renders massive array without virtualization (>10,000 nodes). Will crash browser tab UI thread.\n\nVector: Freezes user browser renderer thread."
+      }
     }
   ]
 }

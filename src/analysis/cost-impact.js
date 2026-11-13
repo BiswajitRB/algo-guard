@@ -65,3 +65,4 @@ export function estimateCloudImpact(finding) {
       return null;
   }
 }
+

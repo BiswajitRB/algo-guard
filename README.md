@@ -4,6 +4,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/Node.js-%3E%3D20-green.svg)](https://nodejs.org/)
+[![Python Version](https://img.shields.io/badge/Python-%3E%3D3.8-yellow.svg)](https://python.org/)
+[![React Supported](https://img.shields.io/badge/React-JSX%20%7C%20TSX-61dafb.svg)](https://react.dev/)
 [![GitHub Action](https://img.shields.io/badge/GitHub%20Action-Ready-orange.svg)](https://github.com/features/actions)
 
 ---

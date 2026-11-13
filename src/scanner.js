@@ -1,5 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { parse } from '@babel/parser';
 import _traverse from '@babel/traverse';
 const traverse = _traverse.default || _traverse;
@@ -8,10 +10,14 @@ import { checkCpuBombs } from './rules/cpu-bombs.js';
 import { checkSleepBombs } from './rules/sleep-bombs.js';
 import { checkMemoryBombs } from './rules/memory-bombs.js';
 import { checkAuthBypass } from './rules/auth-bypass.js';
+import { checkReactHazards } from './rules/react-rules.js';
 import { estimateCloudImpact } from './analysis/cost-impact.js';
 
-const SUPPORTED_EXTENSIONS = new Set(['.js', '.mjs', '.cjs', '.ts', '.jsx', '.tsx']);
-const IGNORED_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'coverage', '.next']);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const SUPPORTED_EXTENSIONS = new Set(['.js', '.mjs', '.cjs', '.ts', '.jsx', '.tsx', '.py']);
+const IGNORED_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'coverage', '.next', '__pycache__']);
 
 export async function scanDirectory(targetDir) {
   const files = collectFiles(targetDir);
@@ -19,15 +25,35 @@ export async function scanDirectory(targetDir) {
 
   for (const filePath of files) {
     try {
-      const code = fs.readFileSync(filePath, 'utf-8');
-      const findings = scanCode(code, filePath);
-      allFindings.push(...findings);
+      const ext = path.extname(filePath);
+      if (ext === '.py') {
+        const pythonFindings = scanPython(filePath);
+        allFindings.push(...pythonFindings);
+      } else {
+        const code = fs.readFileSync(filePath, 'utf-8');
+        const findings = scanCode(code, filePath);
+        allFindings.push(...findings);
+      }
     } catch (err) {
-      // Ignore unparseable non-code files or syntax issues in non-standard files
+      // Ignore unparseable non-code files
     }
   }
 
   return allFindings;
+}
+
+export function scanPython(filePath) {
+  try {
+    const pythonScript = path.join(__dirname, 'python_scanner.py');
+    const stdout = execFileSync('python', [pythonScript, filePath], { encoding: 'utf-8' });
+    const findings = JSON.parse(stdout || '[]');
+    return findings.map(f => ({
+      ...f,
+      cloudImpact: estimateCloudImpact(f)
+    }));
+  } catch (err) {
+    return [];
+  }
 }
 
 export function scanCode(code, filePath = 'unknown.js') {
@@ -64,11 +90,9 @@ export function scanCode(code, filePath = 'unknown.js') {
     }
   };
 
-  // Keep track of active HTTP route scope
   let currentRoute = null;
 
   traverse(ast, {
-    // Detect Express / router HTTP methods: app.get('/...', ...), router.post('/...', ...)
     CallExpression(path) {
       const callee = path.node.callee;
       if (callee.type === 'MemberExpression' && callee.property && callee.property.name) {
@@ -84,9 +108,10 @@ export function scanCode(code, filePath = 'unknown.js') {
         }
       }
 
-      // Run CallExpression rules
+      // Check rules
       checkSleepBombs(path, filePath, wrapContext(context, currentRoute));
       checkMemoryBombs(path, filePath, wrapContext(context, currentRoute));
+      checkReactHazards(path, filePath, wrapContext(context, currentRoute));
     },
 
     ForStatement(path) {
@@ -115,7 +140,7 @@ function wrapContext(baseContext, currentRoute) {
     report(finding) {
       const findingWithRoute = {
         ...finding,
-        route: currentRoute ? `${currentRoute.method} ${currentRoute.path}` : 'Internal Function'
+        route: finding.route || (currentRoute ? `${currentRoute.method} ${currentRoute.path}` : 'Internal Function')
       };
       findingWithRoute.cloudImpact = estimateCloudImpact(findingWithRoute);
       baseContext.report(findingWithRoute);
@@ -146,4 +171,3 @@ function collectFiles(dir) {
 
   return results;
 }
-

@@ -53,7 +53,14 @@ export async function reportToGitHub(findings, token) {
           }
           if (f.attackVector) {
             commentBody += `- **Attack Vector:** ${f.attackVector.description}\n`;
-            commentBody += `\`\`\`bash\n# Test with cURL:\ncurl -X POST "http://localhost:3000${f.route ? f.route.split(' ')[1] : '/api'}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"${f.attackVector.parameter}": ${JSON.stringify(f.attackVector.exploitValue)}}'\n\`\`\`\n`;
+            const routeMethod = f.route && f.route.startsWith('POST') ? 'POST' : 'GET';
+            let routeUrl = '/api/endpoint';
+            if (f.route && f.route.includes(' ')) {
+              routeUrl = f.route.split(' ')[1];
+            } else if (typeof f.attackVector.exploitValue === 'string' && f.attackVector.exploitValue.startsWith('/')) {
+              routeUrl = f.attackVector.exploitValue;
+            }
+            commentBody += `\`\`\`bash\n# Test with cURL:\ncurl -X ${routeMethod} "http://localhost:3000${routeUrl}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"${f.attackVector.parameter}": ${JSON.stringify(f.attackVector.exploitValue)}}'\n\`\`\`\n`;
           }
         });
       }

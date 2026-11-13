@@ -36,7 +36,12 @@ export function printTerminalReport(findings) {
       console.log(`   ${pc.green('Test Parameter:')} ${pc.bold(finding.attackVector.parameter)} = ${JSON.stringify(finding.attackVector.exploitValue)}`);
       
       const method = finding.route && finding.route.startsWith('POST') ? 'POST' : 'GET';
-      const urlPath = finding.route ? finding.route.split(' ')[1] : '/api/endpoint';
+      let urlPath = '/api/endpoint';
+      if (finding.route && finding.route.includes(' ')) {
+        urlPath = finding.route.split(' ')[1];
+      } else if (typeof finding.attackVector.exploitValue === 'string' && finding.attackVector.exploitValue.startsWith('/')) {
+        urlPath = finding.attackVector.exploitValue;
+      }
       console.log(`   ${pc.cyan('cURL Proof:')}`);
       console.log(pc.gray(`      curl -X ${method} "http://localhost:3000${urlPath}" \\`));
       console.log(pc.gray(`        -H "Content-Type: application/json" \\`));
