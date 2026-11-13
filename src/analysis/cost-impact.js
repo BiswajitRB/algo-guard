@@ -14,6 +14,7 @@ export function estimateCloudImpact(finding) {
     case 'UNBOUNDED_CPU_LOOP':
     case 'BUSY_WAIT_SPIN_LOOP':
     case 'HIGH_COMPLEXITY_MULTIPLIER':
+    case 'REGEX_CATASTROPHIC_BACKTRACKING':
       return {
         attackCategory: 'CPU Starvation & Auto-Scale Surge',
         autoscalingBehavior: 'Forces Kubernetes HPA / AWS ECS to hit max-replica threshold (e.g. 2 → 50 pods)',
@@ -21,7 +22,7 @@ export function estimateCloudImpact(finding) {
         cloudCostSurgeWeekly: '$1,400 – $3,200',
         cloudCostSurgeMonthly: '$5,600 – $12,800',
         failureMode: 'Cascading latency spike → 504 Gateway Timeouts → Autoscaler runaway spend',
-        recommendation: 'Cap iteration bounds with Math.min() and implement rate-limiting middleware.'
+        recommendation: 'Rewrite regex to remove nested quantifiers or replace with safe non-backtracking engine (re2).'
       };
 
     case 'ARTIFICIAL_THREAD_SLEEP':

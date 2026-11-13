@@ -8,13 +8,40 @@ import { exportPostmanCollection } from '../src/reporters/postman.js';
 import { generateK8sRecommendations } from '../src/devops/k8s-generator.js';
 import { generateK6Script } from '../src/devops/k6-generator.js';
 import { generatePrometheusRules } from '../src/devops/prometheus-generator.js';
+import { installGitHook, uninstallGitHook } from '../src/devops/hook-installer.js';
 
 const program = new Command();
 
 program
   .name('algo-guard')
   .description('DevOps Pre-Deployment Shield: Detects algorithmic bombs, auto-scales K8s limits, and generates k6 stress tests')
-  .version('1.1.0');
+  .version('1.2.0');
+
+program
+  .command('install-hook')
+  .description('Install local git pre-push hook to block algorithmic bombs before push')
+  .action(() => {
+    try {
+      const hookPath = installGitHook('.');
+      console.log(`✅ AlgoGuard pre-push git hook installed at: ${hookPath}`);
+      console.log('🛡️  Your local git push commands are now protected against algorithmic hazards!');
+    } catch (err) {
+      console.error(`❌ Failed to install hook: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('uninstall-hook')
+  .description('Remove local git pre-push hook')
+  .action(() => {
+    const removed = uninstallGitHook('.');
+    if (removed) {
+      console.log('✔ AlgoGuard pre-push git hook uninstalled.');
+    } else {
+      console.log('ℹ️ No AlgoGuard pre-push hook found to uninstall.');
+    }
+  });
 
 program
   .command('scan [targetPath]')

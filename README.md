@@ -73,14 +73,20 @@ jobs:
 Install or run directly via `npx`:
 
 ```bash
+# Install local Git pre-push hook (blocks dangerous pushes locally)
+npx algo-guard install-hook
+
 # Scan a directory
 npx algo-guard scan ./src
 
-# Scan and export ready-to-test Postman collection
+# Scan and export ready-to-test Postman collection + DevOps pack
 npx algo-guard scan ./src --output-postman postman-proof.json
 
-# Fail with exit code 1 on risk (ideal for git pre-push hooks)
+# Fail with exit code 1 on risk (ideal for CI/CD gates)
 npx algo-guard scan ./src --fail-on-risk
+
+# Ignore test or benchmark folders
+npx algo-guard scan ./src --ignore tests spec e2e
 ```
 
 ---
@@ -131,6 +137,7 @@ npx algo-guard scan ./src --fail-on-risk
 | Rule ID | Severity | What It Catches |
 | :--- | :---: | :--- |
 | `UNBOUNDED_CPU_LOOP` | **CRITICAL** | Loops where bounds are multiplied by user request input or extreme iteration limits. |
+| `REGEX_CATASTROPHIC_BACKTRACKING` | **CRITICAL** | Catastrophic ReDoS exponential backtracking patterns `(a+)+` that freeze CPU cores. |
 | `BUSY_WAIT_SPIN_LOOP` | **CRITICAL** | Spin loops (`while(Date.now() < ...)`) that monopolize CPU cores and block event loops. |
 | `ARTIFICIAL_THREAD_SLEEP` | **CRITICAL** | Synchronous or async sleep/delays inside HTTP handlers that cause thread/worker pool starvation. |
 | `UNBOUNDED_MEMORY_ALLOCATION` | **CRITICAL** | `Buffer.alloc()` or array sizing derived from untrusted input without bounds, causing OOM. |

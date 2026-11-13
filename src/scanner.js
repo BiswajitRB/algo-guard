@@ -11,6 +11,7 @@ import { checkSleepBombs } from './rules/sleep-bombs.js';
 import { checkMemoryBombs } from './rules/memory-bombs.js';
 import { checkAuthBypass } from './rules/auth-bypass.js';
 import { checkReactHazards } from './rules/react-rules.js';
+import { checkReDosBombs } from './rules/redos-bombs.js';
 import { scanPolyglotFile } from './polyglot/universal-scanner.js';
 import { ProjectCallGraph } from './analysis/cross-file-graph.js';
 import { estimateCloudImpact } from './analysis/cost-impact.js';
@@ -195,6 +196,14 @@ export function scanCode(code, filePath = 'unknown.js') {
 
     ConditionalExpression(path) {
       checkAuthBypass(path, filePath, wrapContext(context, currentRoute));
+    },
+
+    RegExpLiteral(path) {
+      checkReDosBombs(path, filePath, wrapContext(context, currentRoute));
+    },
+
+    NewExpression(path) {
+      checkReDosBombs(path, filePath, wrapContext(context, currentRoute));
     }
   });
 

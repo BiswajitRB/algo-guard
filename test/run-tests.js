@@ -61,7 +61,21 @@ async function runTests() {
   assert.ok(ternaryFindings[0].message.includes('Ternary backdoor detected'), 'Should explicitly identify ternary pattern');
   console.log('✅ PASS: Ternary operator backdoor expression (? :) successfully detected.');
 
-  // Test 11: DevOps Bundle Generators (Kubernetes, k6, Prometheus)
+  // Test 11: Catastrophic ReDoS Regex Detection
+  const redosFindings = findings.filter(f => f.filePath.includes('redos-controller'));
+  assert.ok(redosFindings.length > 0, 'ReDoS vulnerability must be detected');
+  assert.ok(redosFindings.some(f => f.ruleId === 'REGEX_CATASTROPHIC_BACKTRACKING'), 'Must identify ReDoS rule');
+  console.log('✅ PASS: Catastrophic ReDoS regex backtracking ((a+)+) successfully detected.');
+
+  // Test 12: Git Pre-Push Hook Installer
+  const { installGitHook, uninstallGitHook } = await import('../src/devops/hook-installer.js');
+  const installedPath = installGitHook('.');
+  assert.ok(installedPath.includes('pre-push'), 'Hook path must contain pre-push');
+  const uninstalled = uninstallGitHook('.');
+  assert.strictEqual(uninstalled, true, 'Hook must uninstall cleanly');
+  console.log('✅ PASS: Git pre-push hook installed and uninstalled cleanly.');
+
+  // Test 13: DevOps Bundle Generators (Kubernetes, k6, Prometheus)
   const { generateK8sRecommendations } = await import('../src/devops/k8s-generator.js');
   const { generateK6Script } = await import('../src/devops/k6-generator.js');
   const { generatePrometheusRules } = await import('../src/devops/prometheus-generator.js');
@@ -74,7 +88,7 @@ async function runTests() {
   assert.ok(prom.includes('kind: PrometheusRule'), 'Prometheus rules must be valid CRD');
   console.log('✅ PASS: DevOps Infrastructure artifacts (K8s, k6, Prometheus) generated.');
 
-  console.log('\n🎉 ALL 11 COMPREHENSIVE END-TO-END & POLYGLOT TEST SUITES PASSED!\n');
+  console.log('\n🎉 ALL 13 COMPREHENSIVE END-TO-END & POLYGLOT TEST SUITES PASSED!\n');
 }
 
 runTests().catch(err => {
