@@ -73,20 +73,26 @@ jobs:
 Install or run directly via `npx`:
 
 ```bash
-# Install local Git pre-push hook (blocks dangerous pushes locally)
+# 🚀 1. Setup Wizard: Initialize config, GitHub workflow, and git hooks in 1 command
+npx algo-guard init
+
+# 🛡️ 2. Install local Git pre-push hook (blocks dangerous pushes locally)
 npx algo-guard install-hook
 
-# Scan a directory
+# 🔍 3. Standard Scan (generates Postman, K8s limits, k6 tests & Prometheus alerts)
 npx algo-guard scan ./src
 
-# Scan and export ready-to-test Postman collection + DevOps pack
-npx algo-guard scan ./src --output-postman postman-proof.json
+# 📊 4. Generate Interactive Standalone HTML Dashboard Report
+npx algo-guard scan ./src --html
 
-# Fail with exit code 1 on risk (ideal for CI/CD gates)
-npx algo-guard scan ./src --fail-on-risk
+# 🛡️ 5. Export OASIS SARIF v2.1.0 for GitHub Security / Code Scanning tab
+npx algo-guard scan ./src --sarif algoguard.sarif
 
-# Ignore test or benchmark folders
-npx algo-guard scan ./src --ignore tests spec e2e
+# 💬 6. Dispatch Instant Alerts to Slack / Discord Webhook
+npx algo-guard scan ./src --slack-webhook https://hooks.slack.com/services/...
+
+# ⚡ 7. High-speed Monorepo Mode: Only scan files changed in PR
+npx algo-guard scan ./src --diff main
 ```
 
 ---

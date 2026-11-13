@@ -5,17 +5,28 @@ import { Command } from 'commander';
 import { scanDirectory } from '../src/scanner.js';
 import { printTerminalReport } from '../src/reporters/terminal.js';
 import { exportPostmanCollection } from '../src/reporters/postman.js';
+import { exportHtmlReport } from '../src/reporters/html-report.js';
+import { exportSarifReport } from '../src/reporters/sarif.js';
+import { sendSlackWebhook, sendDiscordWebhook } from '../src/reporters/webhook.js';
 import { generateK8sRecommendations } from '../src/devops/k8s-generator.js';
 import { generateK6Script } from '../src/devops/k6-generator.js';
 import { generatePrometheusRules } from '../src/devops/prometheus-generator.js';
 import { installGitHook, uninstallGitHook } from '../src/devops/hook-installer.js';
+import { runInitWizard } from '../src/commands/init.js';
 
 const program = new Command();
 
 program
   .name('algo-guard')
   .description('DevOps Pre-Deployment Shield: Detects algorithmic bombs, auto-scales K8s limits, and generates k6 stress tests')
-  .version('1.2.0');
+  .version('1.3.0');
+
+program
+  .command('init')
+  .description('Initialize AlgoGuard configuration, GitHub Action workflow, and local git hooks')
+  .action(() => {
+    runInitWizard();
+  });
 
 program
   .command('install-hook')
@@ -48,6 +59,10 @@ program
   .description('Scan code for algorithmic hazards and generate DevOps infrastructure artifacts')
   .option('-f, --fail-on-risk', 'Exit with code 1 if vulnerabilities are detected (default: false)', false)
   .option('-o, --output-postman <file>', 'Save Postman test collection to file', 'algoguard-postman.json')
+  .option('--html [file]', 'Generate standalone visual HTML dashboard report', 'algoguard-report.html')
+  .option('--sarif [file]', 'Export OASIS SARIF v2.1.0 report for GitHub Security tab')
+  .option('--slack-webhook <url>', 'Send alert notification to Slack webhook URL')
+  .option('--discord-webhook <url>', 'Send alert notification to Discord webhook URL')
   .option('--ignore <patterns...>', 'Ignore directory or file patterns (e.g. --ignore tests mocks)', [])
   .option('--diff <baseBranch>', 'High-speed Monorepo Mode: Only scan files changed against base branch (e.g. --diff main)')
   .option('--staged', 'Only scan staged git files (ideal for pre-commit hooks)', false)
@@ -66,6 +81,28 @@ program
       if (options.outputPostman) {
         exportPostmanCollection(findings, options.outputPostman);
         console.log(`📦 Postman verification collection: ${options.outputPostman}`);
+      }
+
+      if (options.html) {
+        const htmlPath = typeof options.html === 'string' ? options.html : 'algoguard-report.html';
+        exportHtmlReport(findings, htmlPath);
+        console.log(`📊 Interactive HTML Dashboard:      ${htmlPath}`);
+      }
+
+      if (options.sarif) {
+        const sarifPath = typeof options.sarif === 'string' ? options.sarif : 'algoguard.sarif';
+        exportSarifReport(findings, sarifPath);
+        console.log(`🛡️  GitHub Security SARIF Report:     ${sarifPath}`);
+      }
+
+      if (options.slackWebhook) {
+        await sendSlackWebhook(options.slackWebhook, findings);
+        console.log(`💬 Slack alert dispatched to webhook`);
+      }
+
+      if (options.discordWebhook) {
+        await sendDiscordWebhook(options.discordWebhook, findings);
+        console.log(`💬 Discord alert dispatched to webhook`);
       }
 
       if (options.devopsBundle) {

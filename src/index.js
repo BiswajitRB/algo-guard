@@ -3,6 +3,9 @@ import fs from 'node:fs';
 import { scanDirectory } from './scanner.js';
 import { printTerminalReport } from './reporters/terminal.js';
 import { exportPostmanCollection } from './reporters/postman.js';
+import { exportHtmlReport } from './reporters/html-report.js';
+import { exportSarifReport } from './reporters/sarif.js';
+import { sendSlackWebhook } from './reporters/webhook.js';
 import { reportToGitHub } from './reporters/github-pr.js';
 import { generateK8sRecommendations } from './devops/k8s-generator.js';
 import { generateK6Script } from './devops/k6-generator.js';
@@ -14,6 +17,7 @@ export async function run() {
     const failOnRisk = core.getInput('fail-on-risk') === 'true'; // Safe default: false
     const diffBase = core.getInput('diff-base') || '';
     const postmanExport = core.getInput('postman-export') || 'algoguard-postman-collection.json';
+    const slackWebhook = core.getInput('slack-webhook') || process.env.SLACK_WEBHOOK;
     const githubToken = core.getInput('github-token') || process.env.GITHUB_TOKEN;
 
     const findings = await scanDirectory(scanPath, { diffBase });
@@ -25,6 +29,16 @@ export async function run() {
     if (findings.length > 0) {
       exportPostmanCollection(findings, postmanExport);
       core.setOutput('postman-path', postmanExport);
+
+      exportHtmlReport(findings, 'algoguard-report.html');
+      core.setOutput('html-path', 'algoguard-report.html');
+
+      exportSarifReport(findings, 'algoguard.sarif');
+      core.setOutput('sarif-path', 'algoguard.sarif');
+
+      if (slackWebhook) {
+        await sendSlackWebhook(slackWebhook, findings);
+      }
 
       const k8s = generateK8sRecommendations(findings);
       fs.writeFileSync('algoguard-k8s.yaml', k8s.yaml, 'utf-8');
@@ -40,6 +54,8 @@ export async function run() {
 
       console.log(`📦 DevOps Artifacts Generated:`);
       console.log(`   - Postman Collection:     ${postmanExport}`);
+      console.log(`   - HTML Dashboard:         algoguard-report.html`);
+      console.log(`   - GitHub SARIF Report:    algoguard.sarif`);
       console.log(`   - Kubernetes Manifest:    algoguard-k8s.yaml`);
       console.log(`   - k6 Load Testing Script: algoguard-k6-stress.js`);
       console.log(`   - Prometheus Alert Rules: algoguard-prometheus.yaml`);

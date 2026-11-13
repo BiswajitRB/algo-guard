@@ -36,3 +36,4 @@ export function getChangedFiles(baseBranch = null, stagedOnly = false) {
     return null;
   }
 }
+

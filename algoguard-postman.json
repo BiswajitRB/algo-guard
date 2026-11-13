@@ -6,58 +6,6 @@
   },
   "item": [
     {
-      "name": "[CRITICAL] ARTIFICIAL_THREAD_SLEEP - POST /dynamic-path",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"trigger_condition\": true\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/dynamic-path",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "dynamic-path"
-          ]
-        },
-        "description": "Rule: ARTIFICIAL_THREAD_SLEEP\nFile: algoguard-k6-stress.js:180\n\nExplicit sleep call detected (~1ms). In web request handlers, this causes worker thread starvation and artificial latency DoS.\n\nVector: Invoking this handler will hold server connection pools open, leading to gateway timeouts (504)."
-      }
-    },
-    {
-      "name": "[HIGH] STRING_EXPANSION_BOMB - Internal Function",
-      "request": {
-        "method": "Internal",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"payload_flag\": true\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}Function",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "Function"
-          ]
-        },
-        "description": "Rule: STRING_EXPANSION_BOMB\nFile: src\\polyglot\\universal-scanner.js:12\n\nString repeat expansion size derived from untrusted input or excessive constant (>1MB).\n\nVector: N/A"
-      }
-    },
-    {
       "name": "[CRITICAL] UNBOUNDED_CPU_LOOP - Internal Function",
       "request": {
         "method": "Internal",

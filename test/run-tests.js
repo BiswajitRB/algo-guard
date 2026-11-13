@@ -1,4 +1,5 @@
 import { scanDirectory } from '../src/scanner.js';
+import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert';
 
@@ -79,6 +80,9 @@ async function runTests() {
   const { generateK8sRecommendations } = await import('../src/devops/k8s-generator.js');
   const { generateK6Script } = await import('../src/devops/k6-generator.js');
   const { generatePrometheusRules } = await import('../src/devops/prometheus-generator.js');
+  const { exportHtmlReport } = await import('../src/reporters/html-report.js');
+  const { exportSarifReport } = await import('../src/reporters/sarif.js');
+  const { runInitWizard } = await import('../src/commands/init.js');
 
   const k8s = generateK8sRecommendations(findings);
   assert.ok(k8s.yaml.includes('limits:'), 'K8s config must include limits');
@@ -88,7 +92,18 @@ async function runTests() {
   assert.ok(prom.includes('kind: PrometheusRule'), 'Prometheus rules must be valid CRD');
   console.log('✅ PASS: DevOps Infrastructure artifacts (K8s, k6, Prometheus) generated.');
 
-  console.log('\n🎉 ALL 13 COMPREHENSIVE END-TO-END & POLYGLOT TEST SUITES PASSED!\n');
+  // Test 14: Interactive HTML Dashboard & SARIF Security Tab Export
+  const htmlFile = exportHtmlReport(findings, 'test-report.html');
+  assert.ok(fs.existsSync(htmlFile), 'HTML report file must be written');
+  const sarifFile = exportSarifReport(findings, 'test-sarif.sarif');
+  assert.ok(fs.existsSync(sarifFile), 'SARIF report file must be written');
+  const sarifJson = JSON.parse(fs.readFileSync(sarifFile, 'utf-8'));
+  assert.strictEqual(sarifJson.version, '2.1.0', 'SARIF must be version 2.1.0');
+  fs.unlinkSync(htmlFile);
+  fs.unlinkSync(sarifFile);
+  console.log('✅ PASS: Interactive HTML Dashboard & OASIS SARIF v2.1.0 reports generated.');
+
+  console.log('\n🎉 ALL 14 COMPREHENSIVE END-TO-END & POLYGLOT TEST SUITES PASSED!\n');
 }
 
 runTests().catch(err => {
